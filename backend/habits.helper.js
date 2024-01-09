@@ -1,44 +1,79 @@
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-import path from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import fs from "fs/promises"
+import path from "path"
 
-const databasePath = path.join(__dirname, 'database.json');
+const databaseFile = path.join(process.cwd(), 'database.json')
 
-// ... le reste de votre code
-
-export function getHabits() {
-  const rawData = fs.readFileSync(databasePath);
-  return JSON.parse(rawData).habits;
+const readDatabase = async () => {
+  const database = await fs.readFile(databaseFile, "utf-8")
+  const json = JSON.parse(database)
+  return json
 }
 
-export function getTodayHabits() {
-  const today = new Date().toISOString().slice(0, 10);
-  return getHabits().filter(habit => habit.daysDone[today]);
+const writeData = async (newDatabase) => {
+  const database = readDatabase()
+
+  await fs.writeFile(
+    databaseFile, 
+    JSON.stringify(
+      {
+        ...database,
+        ...newDatabase
+      },
+      null,
+      2
+    )
+  )
 }
 
-export function addHabit(title) {
-  const habits = getHabits();
-  const newHabit = {
-    id: Date.now(),
+export const getHabits = async () => {
+  const database = await readDatabase()
+  return database.habits
+}
+
+export const getTodayHabits = async () => {
+  const today = new Date().toISOString().slice(0, 10)
+  const habits = await getHabits()
+
+  return habits.map(habit => {
+    return {
+      id: habit.id,
+      title: habit.title,
+      done: habit.daysDone[today] || false,
+    }
+  })
+}
+
+export const addHabit = async (title) => {
+  const habits = await getHabits()
+
+  const newHabits = {
+    id: (habits[habits.length -1].id || 0) + 1,
     title,
-    daysDone: {}
-  };
-  habits.push(newHabit);
-  fs.writeFileSync(databasePath, JSON.stringify({ habits }));
-  return newHabit;
+    daysDone : {},
+  }
+
+  habits.push(newHabits)
+
+  await writeData({habits})
+
+  return newHabits
 }
 
-export function updateHabit(id, done) {
-  const habits = getHabits();
-  const habitToUpdate = habits.find(habit => habit.id === id);
-  if (!habitToUpdate) return false;
+export const updateHabit = async (habitId, done) => {
+  const habits = await getHabits()
+  const toEditHabit = habits.find(a => a.id === habitId)
 
-  const today = new Date().toISOString().slice(0, 10);
-  habitToUpdate.daysDone[today] = done;
+  if(!toEditHabit) {
+    throw new Error("habitId is invalid")
+  }
+
+  const today = new Date().toISOString().slice(0, 10)
+  toEditHabit.daysDone[today] = done
+
+  await writeData({ habits})
+
+  return toEditHabit
+
   
-  fs.writeFileSync(databasePath, JSON.stringify({ habits }));
-  return true;
 }

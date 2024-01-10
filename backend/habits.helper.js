@@ -1,79 +1,52 @@
+import fs from 'fs/promises';
+import path from 'path';
 
-import fs from "fs/promises"
-import path from "path"
-
-const databaseFile = path.join(process.cwd(), 'database.json')
+const databaseFile = path.join(process.cwd(), 'database.json');
 
 const readDatabase = async () => {
-  const database = await fs.readFile(databaseFile, "utf-8")
-  const json = JSON.parse(database)
-  return json
-}
-
-const writeData = async (newDatabase) => {
-  const database = readDatabase()
-
-  await fs.writeFile(
-    databaseFile, 
-    JSON.stringify(
-      {
-        ...database,
-        ...newDatabase
-      },
-      null,
-      2
-    )
-  )
-}
+  const database = await fs.readFile(databaseFile, 'utf-8');
+  return JSON.parse(database);
+};
 
 export const getHabits = async () => {
-  const database = await readDatabase()
-  return database.habits
-}
+  const database = await readDatabase();
+  return database.habits;
+};
 
 export const getTodayHabits = async () => {
-  const today = new Date().toISOString().slice(0, 10)
-  const habits = await getHabits()
+  const today = new Date().toISOString().slice(0, 10);
+  const database = await readDatabase();
 
-  return habits.map(habit => {
+  return database.habits.map((habit) => {
     return {
-      id: habit.id,
-      title: habit.title,
+      ...habit,
       done: habit.daysDone[today] || false,
-    }
-  })
-}
+    };
+  });
+};
 
 export const addHabit = async (title) => {
-  const habits = await getHabits()
+  const habits = await getHabits();
 
-  const newHabits = {
-    id: (habits[habits.length -1].id || 0) + 1,
+  habits.push({
+    id: habits[habits.length - 1].id + 1,
     title,
-    daysDone : {},
-  }
+    daysDone: {},
+  });
 
-  habits.push(newHabits)
-
-  await writeData({habits})
-
-  return newHabits
-}
+  await fs.writeFile(databaseFile, JSON.stringify({ habits }, null, 2));
+};
 
 export const updateHabit = async (habitId, done) => {
-  const habits = await getHabits()
-  const toEditHabit = habits.find(a => a.id === habitId)
+  const today = new Date().toISOString().slice(0, 10);
+  const habits = await getHabits();
 
-  if(!toEditHabit) {
-    throw new Error("habitId is invalid")
+  const habitIndex = habits.findIndex((habit) => habit.id === Number(habitId));
+  if (habitIndex === -1) {
+    throw new Error('Habit not found');
   }
 
-  const today = new Date().toISOString().slice(0, 10)
-  toEditHabit.daysDone[today] = done
+  habits[habitIndex].daysDone[today] = done;
 
-  await writeData({ habits})
-
-  return toEditHabit
-
-  
-}
+  await fs.writeFile(databaseFile, JSON.stringify({ habits }, null, 2));
+};

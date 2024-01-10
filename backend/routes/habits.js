@@ -1,82 +1,43 @@
-
-import { addHabit, getHabits, getTodayHabits, updateHabit } from "../habits.helper.js"
-
-
-export async function habitsRoute (fastify) {
-
-    fastify.get('/', async (request, reply) => {
-        
-        try {
-            const habits = await getHabits()
-            return habits
-        } catch (e) {
-            reply.code(400).send({
-                error: e.message,
-            })
-        }
-
-    })
-
-    fastify.get("/today", async (request, reply) => {
-       
-        try {
-            const todayHabits = await getTodayHabits()
-            return todayHabits
-        } catch (e) {
-            reply.code(400).send({
-                error: e.message,
-            })
-        }
-    })
-
+import {
+    addHabit,
+    getHabits,
+    getTodayHabits,
+    updateHabit,
+  } from '../habits.helper.js';
+  
+  export async function habitsRoute(fastify) {
+    fastify.get('/', async () => {
+      const habits = await getHabits();
+      return habits;
+    });
     fastify.post('/', async (request, reply) => {
-        const body = request.body
-        if(body.title === undefined) {
-            reply.code(400).send({
-                error: "Title is required in the body"
-            })
-        }
-
-        try {
-            const newHabit = await addHabit(body.title)
-            return newHabit
-        } catch (e) {
-            reply.code(400).send({
-                error: "Title is required in the body"
-            })
-        }
-        
-    })
-
+      const body = request.body;
+  
+      console.log(body);
+      if (!body.title) {
+        return reply.code(400).send({ error: 'Title is required' });
+      }
+  
+      await addHabit(body.title);
+  
+      return reply.code(201).send({ success: true });
+    });
+  
+    fastify.get('/today', async () => {
+      const todayHabits = await getTodayHabits();
+  
+      return todayHabits;
+    });
+  
     fastify.patch('/:habitId', async (request, reply) => {
-        const body = request.body
-        if(body.done === undefined) {
-            reply.code(400).send({
-                error: "Done is required in the body"
-            })
-        }
-
-        if(typeof body.done !== "number") {
-            reply.code(400).send({
-                error: "done value in the body must be a boolean"
-            })
-        }
-
-        const habitId = Number(request.params.habitId)
-        if(!habitId || Number.isNaN(habitId)) {
-            reply.code(400).send({
-                error: "habitId must be a number"
-            })
-        }
-
-        try {
-            const updatedHabit = await updateHabit(habitId, body.done)
-            return updatedHabit
-        } catch (e) {
-            reply.code(400).send({
-                error: "habitId must be a number"
-            })
-        }
-    })
-
-}
+      const body = request.body;
+  
+      if (body.done === undefined) {
+        return reply.code(400).send({ error: 'Done is required' });
+      }
+  
+      await updateHabit(request.params.habitId, body.done);
+  
+      return reply.code(200).send({ success: true });
+    });
+  }

@@ -1,5 +1,20 @@
+import { createHabit } from "../api/habits-api";
+import { TodayHabits } from "./TodayHabits";
+
 export class AddHabitDialog {
-    constructor() {}
+    static instance
+    constructor() {
+        if(AddHabitDialog.instance) {
+            throw new Error("Use AddHabitDialog.getInstance() instead")
+        }
+    }
+
+    static getInstance() {
+        if(!AddHabitDialog.instance) {
+            AddHabitDialog.instance = new AddHabitDialog()
+        }
+        return AddHabitDialog.instance
+    }
 
     _open = false
 
@@ -11,6 +26,26 @@ export class AddHabitDialog {
         this.trigger.addEventListener("click", () => {
             this.open = true
         })
+
+        this.form.addEventListener("submit", (e) => {
+            e.preventDefault()
+            this.handleSubmit(e)
+            
+        })
+    }
+
+    async handleSubmit(e) {
+        const form = e.currentTarget
+        const formData = new FormData(form)
+        const title = formData.get("title")
+        
+        try {
+            await createHabit(title)
+            TodayHabits.getInstance().refresh()
+            this.open = false
+        } catch {
+            alert("failed to create habit")
+        }
     }
 
     get open() {

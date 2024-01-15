@@ -4,22 +4,24 @@
       "id": 1,
       "title": "Work 4 hours",
       "daysDone": {
-        "2023-01-06": true,
-        "2023-08-11": true,
-        "2023-08-12": true,
-        "2023-08-14": true,
         "2024-01-11": true,
-        "2024-01-14": false
+        "2024-01-14": false,
+        "2024-01-15": true
       }
     },
     {
       "id": 2,
       "title": "Go to sport",
       "daysDone": {
-        "2023-08-11": true,
-        "2023-08-12": true,
-        "2023-08-14": true,
-        "2024-01-11": true
+        "2024-01-11": true,
+        "2024-01-15": true
+      }
+    },
+    {
+      "id": 3,
+      "title": "Faire du code",
+      "daysDone": {
+        "2024-01-15": true
       }
     }
   ]

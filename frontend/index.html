@@ -7,7 +7,7 @@
     <title>Vite App</title>
   </head>
   <body>
-    
+
     <dialog class="dialog" id="add-habit-dialog">
       <div class="dialog-content">
         <h2>Add a new habits !</h2>
@@ -21,14 +21,28 @@
         </form>
       </div>
     </dialog>
+
+    <dialog class="dialog" id="habits-history-dialog">
+      <div class="dialog-content">
+        <h2>Habits history</h2>
+        <div id="table-wrapper"></div>
+        <form method="dialog">
+          <button type="submit" class="close-button">X</button>
+        </form>
+      </div>
+    </dialog>
+    
     
     <div id="app">
       <h1>Habit to make today !</h1>
       <div id="today-habits" class="habits">
         <p>Loading...</p>
       </div>
-      <button id="#add-new-habit">
+      <button id="add-new-habit">
         Create a new habit
+      </button>
+      <button id="open-history">
+        Open history
       </button>
     </div>
     
